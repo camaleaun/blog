@@ -39,6 +39,7 @@ jobs:
           external_repository: camaleaun/camaleaun.github.io
           publish_branch: master
           publish_dir: ./dist
+          keep_files: true
           force_orphan: false
           user_name: github-actions[bot]
           user_email: github-actions[bot]@users.noreply.github.com
