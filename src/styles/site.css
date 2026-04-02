@@ -1,0 +1,254 @@
+:root {
+  --bg: #ffffff;
+  --surface: #fffdfa;
+  --ink: #1e1f22;
+  --accent: #0f6d5a;
+  --accent-soft: #d7ece5;
+  --line: #d7d0c4;
+  --shadow: rgba(27, 31, 41, 0.08);
+}
+
+html[data-theme="dark"] {
+  --bg: #121418;
+  --surface: #1e2124;
+  --ink: #f2f2f3;
+  --accent: #7de2bf;
+  --accent-soft: #1c3f34;
+  --line: #32363b;
+  --shadow: rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.shell {
+  width: min(980px, 92vw);
+  margin: 2rem auto 4rem;
+}
+
+.home-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.topbar-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.nav-dropdown {
+  position: relative;
+  padding-bottom: 0.2rem;
+}
+
+.nav-dropdown-trigger {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.nav-dropdown-trigger::after {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+  opacity: 0.75;
+  margin-left: 0.15rem;
+  transform: translateY(1px);
+}
+
+.nav-dropdown.is-open .nav-dropdown-trigger::after {
+  transform: translateY(1px) rotate(180deg);
+}
+
+.icon-language,
+.icon-theme {
+  opacity: 0.9;
+}
+
+.nav-dropdown-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  min-width: 170px;
+  box-shadow: 0 10px 28px var(--shadow);
+  display: none;
+  z-index: 20;
+}
+
+.nav-dropdown.is-open .nav-dropdown-menu {
+  display: block;
+}
+
+.nav-dropdown-menu a,
+.dropdown-option {
+  text-decoration: none;
+  color: var(--ink);
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+.nav-dropdown-menu a:hover,
+.dropdown-option:hover {
+  background: var(--accent-soft);
+}
+
+.nav-dropdown-menu a.active,
+.dropdown-option.active {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.post-grid {
+  margin-top: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.post-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.post-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+
+.post-thumbnail {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+
+.thumb-placeholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  border: 1px dashed var(--line);
+  background:
+    radial-gradient(circle at 20% 20%, color-mix(in srgb, var(--accent) 22%, transparent) 0, transparent 42%),
+    radial-gradient(circle at 80% 70%, color-mix(in srgb, var(--ink) 14%, transparent) 0, transparent 36%),
+    linear-gradient(135deg, color-mix(in srgb, var(--surface) 84%, var(--accent-soft)) 0%, var(--surface) 100%);
+}
+
+.post-card a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.post-card-media {
+  display: block;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+
+.post-card-media img,
+.post-card-media picture {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 0;
+  border-radius: 0;
+}
+
+.post-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1;
+  padding-top: 0.6rem;
+}
+
+.post-card-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.post-card-title {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.post-card h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.35;
+}
+
+.post-card p {
+  margin: 0;
+}
+
+.post-single {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+.post-meta {
+  margin-top: -0.4rem;
+  color: #62666f;
+}
+
+@media (max-width: 640px) {
+  .shell {
+    margin-top: 1rem;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+  }
+}

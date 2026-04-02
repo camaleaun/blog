@@ -1,0 +1,54 @@
+---
+import { getCollection } from "astro:content";
+import { Image } from "astro:assets";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { formatDate } from "../lib/formatDate";
+import { truncateSummary } from "../lib/truncateSummary";
+import { sanitizeEmoji } from "../lib/sanitizeEmoji";
+import { getPostThumbnail } from "../lib/getPostThumbnail";
+
+const posts = (await getCollection("posts"))
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+const baseUrl = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+---
+
+<BaseLayout title="Blog" description="Posts" locale="en" enUrl={baseUrl} ptUrl={`${baseUrl}pt-br/`}>
+  <header>
+    <h1>Posts</h1>
+    <p>Posts are managed directly from the posts folder.</p>
+  </header>
+
+  <section class="post-grid">
+    {posts.map((post) => {
+      const thumbnail = getPostThumbnail(post.data.slug, "en");
+
+      return (
+        <article class="post-card">
+          <a class="post-card-media" href={`${baseUrl}${post.data.slug}/`}>
+            {thumbnail && (
+              <Image
+                src={thumbnail}
+                alt={`Thumbnail for ${post.data.title}`}
+                loading="lazy"
+                widths={[288, 576]}
+                sizes="(max-width: 640px) 100vw, 288px"
+              />
+            )}
+            {!thumbnail && <div class="thumb-placeholder" aria-hidden="true"></div>}
+          </a>
+          <div class="post-card-body">
+            <a class="post-card-title" href={`${baseUrl}${post.data.slug}/`}>
+            <h2>{sanitizeEmoji(post.data.title)}</h2>
+            </a>
+            <div class="post-card-footer">
+              <p>{truncateSummary(sanitizeEmoji(post.data.description))}</p>
+              <small>{formatDate(post.data.pubDate, "en")}</small>
+            </div>
+          </div>
+        </article>
+      );
+    })}
+  </section>
+</BaseLayout>

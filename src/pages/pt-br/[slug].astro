@@ -1,0 +1,37 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { formatDate } from "../../lib/formatDate";
+import { getPostThumbnail } from "../../lib/getPostThumbnail";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("postsPt");
+
+  return posts.map((post) => ({
+    params: { slug: post.data.slug },
+    props: { post }
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const thumbnail = getPostThumbnail(post.data.slug, "pt-BR", post.data.origin);
+const baseUrl = import.meta.env.BASE_URL.endsWith("/")
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+const enUrl = `${baseUrl}${post.data.origin}/`;
+---
+
+<BaseLayout title={post.data.title} description={post.data.description} locale="pt-BR" enUrl={enUrl} ptUrl={`${baseUrl}pt-br/${post.data.slug}/`}>
+  <article class="post-single">
+    <h1>{post.data.title}</h1>
+    <p class="post-meta">{formatDate(post.data.pubDate, "pt-BR")}</p>
+    {thumbnail && (
+      <img src={thumbnail.src}
+        alt={`Miniatura de ${post.data.title}`}
+        class="post-thumbnail" />
+    )}
+    {!thumbnail && <div class="thumb-placeholder" aria-hidden="true"></div>}
+    <Content />
+  </article>
+</BaseLayout>
