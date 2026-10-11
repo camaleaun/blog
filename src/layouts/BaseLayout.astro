@@ -24,6 +24,8 @@ interface Props {
   type?: "website" | "article" | "profile";
   publishedTime?: Date;
   jsonLd?: Record<string, unknown>;
+  /** No canonical URL: the 404 is served at any path (GitHub Pages answers it with status 404, so it is never indexed). */
+  noCanonical?: boolean;
 }
 
 const {
@@ -36,7 +38,8 @@ const {
   image,
   type = "website",
   publishedTime,
-  jsonLd
+  jsonLd,
+  noCanonical = false
 } = Astro.props;
 
 const s = t(locale);
@@ -61,7 +64,7 @@ const current = (url: string) => (Astro.url.pathname === url ? "page" : undefine
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical.href} />
+    {!noCanonical && <link rel="canonical" href={canonical.href} />}
     {alternates?.en && <link rel="alternate" hreflang="en" href={absolute(alternates.en)} />}
     {alternates?.pt && <link rel="alternate" hreflang="pt-BR" href={absolute(alternates.pt)} />}
     {alternates?.en && <link rel="alternate" hreflang="x-default" href={absolute(alternates.en)} />}
@@ -78,7 +81,7 @@ const current = (url: string) => (Astro.url.pathname === url ? "page" : undefine
     <meta property="og:locale" content={s.ogLocale} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical.href} />
+    {!noCanonical && <meta property="og:url" content={canonical.href} />}
     <meta property="og:image" content={socialUrl} />
     <meta property="og:image:width" content={String(socialWidth)} />
     <meta property="og:image:height" content={String(socialHeight)} />
@@ -140,9 +143,21 @@ const current = (url: string) => (Astro.url.pathname === url ? "page" : undefine
 <style lang="scss">
   @use "../styles/mq" as *;
 
+  // Sticky: stays at the top while scrolling, translucent over the content.
   .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
     border-bottom: 1px solid var(--gt-border);
-    background: var(--gt-paper);
+    background: color-mix(in srgb, var(--gt-paper) 88%, transparent);
+    -webkit-backdrop-filter: saturate(1.6) blur(12px);
+    backdrop-filter: saturate(1.6) blur(12px);
+  }
+
+  @supports not (backdrop-filter: blur(1px)) {
+    .site-header {
+      background: var(--gt-paper);
+    }
   }
 
   .site-header-inner {
