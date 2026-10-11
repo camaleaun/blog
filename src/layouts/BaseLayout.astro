@@ -2,13 +2,9 @@
 import "../styles/global.scss";
 import type { ImageMetadata } from "astro";
 import { getImage } from "astro:assets";
-import Brand from "../components/Brand.astro";
-import LanguageSwitch from "../components/LanguageSwitch.astro";
-import ThemeToggle from "../components/ThemeToggle.astro";
-import Icon from "../components/Icon.astro";
-import { Picture } from "astro:assets";
-import wapuu from "../assets/wapuu.webp";
-import { baseUrl, githubUrl, siteName, t, type Locale } from "../lib/i18n";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import { baseUrl, siteName, t, type Locale } from "../lib/i18n";
 import ogEn from "../assets/og-en.png";
 import ogPt from "../assets/og-pt-br.png";
 
@@ -26,6 +22,13 @@ interface Props {
   jsonLd?: Record<string, unknown>;
   /** No canonical URL: the 404 is served at any path (GitHub Pages answers it with status 404, so it is never indexed). */
   noCanonical?: boolean;
+  /**
+   * The 404: one page for both languages. Header, footer and the page's own
+   * `[data-locale]` blocks come in both; a script in `head` switches to
+   * Portuguese under /pt-br/ (title, description, `lang`) before first paint,
+   * and CSS hides the other language.
+   */
+  bilingual?: { title: string; description: string };
 }
 
 const {
@@ -39,7 +42,8 @@ const {
   type = "website",
   publishedTime,
   jsonLd,
-  noCanonical = false
+  noCanonical = false,
+  bilingual
 } = Astro.props;
 
 const s = t(locale);
@@ -53,8 +57,8 @@ const social = image
 const socialUrl = absolute(social.src);
 const socialWidth = social.attributes.width ?? 1200;
 const socialHeight = social.attributes.height ?? (image ? 1200 : 630);
-const year = new Date().getFullYear();
-const current = (url: string) => (Astro.url.pathname === url ? "page" : undefined);
+const locales: Locale[] = bilingual ? ["en", "pt-BR"] : [locale];
+const ptPrefix = `${baseUrl}pt-br/`;
 ---
 
 <!doctype html>
@@ -101,199 +105,43 @@ const current = (url: string) => (Astro.url.pathname === url ? "page" : undefine
         root.dataset.themeMode = mode;
       })();
     </script>
+    {
+      bilingual && (
+        <script
+          is:inline
+          define:vars={{ ptPrefix, ptTitle: bilingual.title, ptDescription: bilingual.description }}
+        >
+          if (location.pathname === ptPrefix.slice(0, -1) || location.pathname.startsWith(ptPrefix)) {
+            document.documentElement.lang = "pt-BR";
+            document.title = ptTitle;
+            document.querySelector('meta[name="description"]')?.setAttribute("content", ptDescription);
+          }
+        </script>
+      )
+    }
   </head>
   <body>
-    <a class="skip-link" href="#main">{s.skip}</a>
-
-    <header class="site-header">
-      <div class="container site-header-inner">
-        <Brand locale={locale} />
-        <nav class="site-tools" aria-label={s.menu}>
-          <a class="nav-link" href={s.pluginsUrl} aria-current={current(s.pluginsUrl)}>{s.plugins}</a>
-          <a class="nav-link" href={s.aboutUrl} aria-current={current(s.aboutUrl)}>{s.about}</a>
-          <LanguageSwitch locale={locale} enUrl={enUrl} ptUrl={ptUrl} />
-        </nav>
-        <ThemeToggle locale={locale} />
-      </div>
-    </header>
+    {
+      locales.map((l) => (
+        <SiteHeader
+          locale={l}
+          enUrl={bilingual ? t("en").homeUrl : enUrl}
+          ptUrl={bilingual ? t("pt-BR").homeUrl : ptUrl}
+          tagged={!!bilingual}
+        />
+      ))
+    }
 
     <main id="main" tabindex="-1">
       <slot />
     </main>
 
-    <footer class="site-footer">
-      <div class="container site-footer-inner">
-        <a class="site-footer-about" href={s.aboutUrl}>
-          <Picture src={wapuu} formats={["avif", "webp"]} widths={[48, 96]} sizes="3rem" alt="" loading="lazy" />
-          {s.aboutAuthor}
-        </a>
-        <p>
-          © {year} {siteName} · camaleaun
-        </p>
-        <p class="site-footer-note">{s.footer}</p>
-        <a class="site-footer-link" href={githubUrl} rel="me">
-          <Icon name="github" size={18} />
-          {s.github}
-        </a>
-      </div>
-    </footer>
+    <SiteFooter locales={locales} />
   </body>
 </html>
 
 <style lang="scss">
-  @use "../styles/mq" as *;
-
-  // Sticky: stays at the top while scrolling, translucent over the content.
-  .site-header {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    border-bottom: 1px solid var(--gt-border);
-    background: color-mix(in srgb, var(--gt-paper) 88%, transparent);
-    -webkit-backdrop-filter: saturate(1.6) blur(12px);
-    backdrop-filter: saturate(1.6) blur(12px);
-  }
-
-  @supports not (backdrop-filter: blur(1px)) {
-    .site-header {
-      background: var(--gt-paper);
-    }
-  }
-
-  .site-header-inner {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--gt-space-2) var(--gt-space-4);
-    padding-block: var(--gt-space-3);
-  }
-
-  .site-tools {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--gt-space-1);
-    margin-left: auto;
-  }
-
-  .nav-link {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--gt-target);
-    padding-inline: var(--gt-space-3);
-    border-radius: var(--gt-radius-full);
-    color: var(--gt-ink);
-    font-size: var(--gt-text-sm);
-    font-weight: 500;
-    text-decoration: none;
-    transition: background-color var(--gt-duration) var(--gt-ease);
-  }
-
-  .nav-link:hover {
-    background: var(--gt-surface);
-    color: var(--gt-ink);
-  }
-
-  .nav-link[aria-current="page"] {
-    background: var(--gt-primary-soft);
-    font-weight: 650;
-  }
-
-  // A thin rule between the page link and the language links.
-  .site-tools :global(.languages) {
-    margin-left: var(--gt-space-2);
-    padding-left: var(--gt-space-3);
-    border-left: 1px solid var(--gt-border);
-  }
-
-  @include mobile {
-    .site-header-inner {
-      justify-content: space-between;
-    }
-
-    .site-tools {
-      margin-left: 0;
-      order: 3;
-      width: 100%;
-      margin-inline: calc(-1 * var(--gt-space-2));
-    }
-
-    .nav-link,
-    .site-tools :global(.languages a) {
-      padding-inline: var(--gt-space-2);
-    }
-
-    .site-tools :global(.languages) {
-      margin-left: 0;
-      padding-left: 0;
-      border-left: 0;
-    }
-  }
-
   main {
     outline: none;
-  }
-
-  .site-footer {
-    border-top: 1px solid var(--gt-border);
-    background: var(--gt-surface);
-    color: var(--gt-muted);
-    font-size: var(--gt-text-sm);
-  }
-
-  .site-footer-inner {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--gt-space-2) var(--gt-space-6);
-    padding-block: var(--gt-space-6);
-
-    p {
-      margin: 0;
-    }
-  }
-
-  .site-footer-note {
-    flex: 1;
-  }
-
-  .site-footer-about {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--gt-space-3);
-    min-height: var(--gt-target);
-    color: var(--gt-ink);
-    font-weight: 600;
-    text-decoration: none;
-
-    :global(img) {
-      width: 3rem;
-      height: auto;
-      transition: transform var(--gt-duration) var(--gt-ease);
-    }
-  }
-
-  .site-footer-about:hover {
-    color: var(--gt-primary);
-    text-decoration: underline;
-
-    :global(img) {
-      transform: rotate(-8deg) scale(1.08);
-    }
-  }
-
-  .site-footer-link {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--gt-space-2);
-    min-height: var(--gt-target);
-    color: var(--gt-ink);
-    font-weight: 500;
-    text-decoration: none;
-  }
-
-  .site-footer-link:hover {
-    color: var(--gt-primary);
-    text-decoration: underline;
   }
 </style>

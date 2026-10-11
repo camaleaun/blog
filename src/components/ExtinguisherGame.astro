@@ -1,0 +1,387 @@
+---
+// The Wapuu Chameleon Firefighter game: the stage, the score bar, the buttons
+// and the share links. Static HTML until Play: the game code (src/game/) and
+// its sprite sheet load on the first click.
+// Without `locale` (the 404, one page for both languages) every text is
+// rendered in both languages and the page's language shows one of them.
+import sheetUrl from "../assets/game/wapuu.png?url";
+import { gameStrings, type GameStrings } from "../game/i18n";
+import { t, type Locale } from "../lib/i18n";
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale } = Astro.props;
+const both = !locale;
+const locales: Locale[] = locale ? [locale] : ["en", "pt-BR"];
+const text = (pick: (s: GameStrings) => string) =>
+  locales.map((l) => ({ l: both ? l : undefined, value: pick(gameStrings(l)) }));
+const share = (l: Locale) => new URL(t(l).gameUrl, Astro.site).href;
+const networks = [
+  { net: "whatsapp", label: "WhatsApp" },
+  { net: "x", label: "X" },
+  { net: "linkedin", label: "LinkedIn" },
+  { net: "facebook", label: "Facebook" }
+];
+---
+
+<section
+  class="xgame"
+  data-xgame
+  data-share-en={share("en")}
+  data-share-pt={share("pt-BR")}
+  style={`--xgame-sheet: url(${sheetUrl})`}
+>
+  <div class="xgame-stage" data-stage>
+    <canvas class="xgame-canvas" data-canvas tabindex="0" role="img"></canvas>
+    <div class="xgame-overlay" data-overlay>
+      <div class="xgame-hero" aria-hidden="true"></div>
+      <p class="xgame-title" data-overlay-title>
+        {text((s) => s.name).map(({ l, value }) => <span data-locale={l}>{value}</span>)}
+      </p>
+      <p class="xgame-text" data-overlay-text>
+        {text((s) => s.tagline).map(({ l, value }) => <span data-locale={l}>{value}</span>)}
+      </p>
+      <button class="xgame-primary" type="button" data-primary>
+        {text((s) => s.play).map(({ l, value }) => <span data-locale={l}>{value}</span>)}
+      </button>
+      <div class="xgame-share" data-share hidden>
+        <button class="xgame-button" type="button" data-share-native hidden>
+          {text((s) => s.share).map(({ l, value }) => <span data-locale={l}>{value}</span>)}
+        </button>
+        <ul class="xgame-networks" role="list">
+          {
+            networks.map(({ net, label }) => (
+              <li>
+                <a class="xgame-button" data-net={net} href={share(locale ?? "en")} target="_blank" rel="noopener">
+                  <span class="visually-hidden">
+                    {text((s) => s.shareOn).map(({ l, value }) => <span data-locale={l}>{value} </span>)}
+                  </span>
+                  {label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <button class="xgame-button" type="button" data-copy>
+          <span data-copy-label>
+            {text((s) => s.copyLink).map(({ l, value }) => <span data-locale={l}>{value}</span>)}
+          </span>
+        </button>
+      </div>
+      <p class="xgame-help xgame-help-keys">
+        {text((s) => s.keys).map(({ l, value }) => <span data-locale={l}>{value}</span>)}
+      </p>
+      <p class="xgame-help xgame-help-touch">
+        {text((s) => s.touch).map(({ l, value }) => <span data-locale={l}>{value}</span>)}
+      </p>
+    </div>
+    <p class="visually-hidden" data-live aria-live="polite"></p>
+  </div>
+
+  <div class="xgame-bar">
+    <dl class="xgame-hud">
+      <div>
+        <dt>{text((s) => s.score).map(({ l, value }) => <span data-locale={l}>{value}</span>)}</dt>
+        <dd data-hud-score>0</dd>
+      </div>
+      <div>
+        <dt>{text((s) => s.best).map(({ l, value }) => <span data-locale={l}>{value}</span>)}</dt>
+        <dd data-hud-best>0</dd>
+      </div>
+      <div>
+        <dt>{text((s) => s.lives).map(({ l, value }) => <span data-locale={l}>{value}</span>)}</dt>
+        <dd class="xgame-lives" data-hud-lives>♥♥♥</dd>
+      </div>
+      <div>
+        <dt>{text((s) => s.combo).map(({ l, value }) => <span data-locale={l}>{value}</span>)}</dt>
+        <dd data-hud-combo>×1</dd>
+      </div>
+    </dl>
+    <div class="xgame-tools">
+      <button class="xgame-button" type="button" data-sound aria-pressed="false">
+        <span aria-hidden="true">♪</span>
+        <span data-sound-label>
+          {text((s) => s.soundOff).map(({ l, value }) => <span data-locale={l}>{value}</span>)}
+        </span>
+      </button>
+      <button class="xgame-button" type="button" data-pause disabled>
+        <span aria-hidden="true">❚❚</span>
+        {text((s) => s.pause).map(({ l, value }) => <span data-locale={l}>{value}</span>)}
+      </button>
+      <button class="xgame-button" type="button" data-fullscreen aria-pressed="false" hidden>
+        <span aria-hidden="true">⛶</span>
+        <span data-fullscreen-label>
+          {text((s) => s.fullscreen).map(({ l, value }) => <span data-locale={l}>{value}</span>)}
+        </span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { gameStrings } from "../game/i18n";
+
+  // Only the canvas' name and the Play button until the first click.
+  for (const root of document.querySelectorAll<HTMLElement>("[data-xgame]")) {
+    const s = gameStrings(document.documentElement.lang === "pt-BR" ? "pt-BR" : "en");
+    root.querySelector("[data-canvas]")?.setAttribute("aria-label", s.canvas);
+    root.querySelector("[data-primary]")?.addEventListener(
+      "click",
+      async () => {
+        const { boot } = await import("../game/game");
+        await boot(root);
+      },
+      { once: true }
+    );
+  }
+</script>
+
+<style lang="scss">
+  @use "../styles/mq" as *;
+
+  // The game keeps its own palette (a night site) in both themes.
+  .xgame {
+    --xgame-night: #151a3d;
+    --xgame-panel: #1d2452;
+    --xgame-lime: #c6f35b;
+    --xgame-yellow: #facd1e;
+
+    display: grid;
+    gap: var(--gt-space-3);
+    width: 100%;
+  }
+
+  // It only works with JavaScript; the head script adds .js.
+  :global(:root:not(.js)) .xgame {
+    display: none;
+  }
+
+  .xgame-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    // The whole stage fits under the sticky header.
+    max-height: calc(100svh - 7rem);
+    overflow: hidden;
+    border-radius: var(--gt-radius-lg);
+    background: var(--xgame-night);
+    color: #fff;
+
+    @include mobile {
+      aspect-ratio: 3 / 4;
+    }
+
+    &:fullscreen {
+      max-height: none;
+      aspect-ratio: auto;
+      border-radius: 0;
+    }
+  }
+
+  .xgame-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    touch-action: none;
+    outline: none;
+  }
+
+  .xgame-stage:has(.xgame-canvas:focus-visible) {
+    outline: 2px solid var(--gt-primary);
+    outline-offset: 2px;
+  }
+
+  .xgame-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--gt-space-3);
+    padding: var(--gt-space-6) var(--gt-space-4);
+    overflow-y: auto;
+    background: rgb(21 26 61 / 0.82);
+    text-align: center;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  // The idle frame of the sprite sheet, pixel-sharp, before the game loads.
+  .xgame-hero {
+    flex: none;
+    width: 128px;
+    height: 144px;
+    background: var(--xgame-sheet) 0 0 / 640px 144px no-repeat;
+    image-rendering: pixelated;
+  }
+
+  .xgame-title {
+    margin: 0;
+    font-family: var(--gt-mono);
+    font-size: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--xgame-lime);
+    text-shadow: 3px 3px 0 #000;
+  }
+
+  .xgame-text {
+    margin: 0;
+    max-width: 36rem;
+    font-size: var(--gt-text-lg);
+    font-weight: 600;
+  }
+
+  .xgame-help {
+    margin: 0;
+    max-width: 30rem;
+    color: #c9cff2;
+    font-size: var(--gt-text-sm);
+  }
+
+  // Touch screens see the swipe hint, the rest the keys.
+  .xgame-help-touch {
+    display: none;
+  }
+
+  @media (pointer: coarse) {
+    .xgame-help-keys {
+      display: none;
+    }
+
+    .xgame-help-touch {
+      display: block;
+    }
+  }
+
+  .xgame-primary {
+    min-height: 3rem;
+    padding-inline: var(--gt-space-8);
+    border: 0;
+    border-radius: var(--gt-radius-full);
+    background: var(--xgame-lime);
+    color: #0b3d33;
+    font: inherit;
+    font-size: var(--gt-text-lg);
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #6f9a1c;
+
+    &:hover {
+      background: #d6ff7a;
+    }
+
+    &:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #6f9a1c;
+    }
+
+    &:disabled {
+      cursor: progress;
+      opacity: 0.8;
+    }
+  }
+
+  .xgame-share {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--gt-space-2);
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .xgame-networks {
+    display: contents;
+
+    li {
+      display: flex;
+    }
+  }
+
+  .xgame-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gt-space-2);
+    min-height: var(--gt-target);
+    padding-inline: var(--gt-space-4);
+    border: 1px solid var(--gt-border);
+    border-radius: var(--gt-radius-full);
+    background: var(--gt-paper);
+    color: var(--gt-ink);
+    font: inherit;
+    font-size: var(--gt-text-sm);
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--gt-surface);
+      color: var(--gt-ink);
+    }
+
+    &:disabled {
+      cursor: default;
+      opacity: 0.55;
+    }
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .xgame-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gt-space-3);
+  }
+
+  .xgame-hud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gt-space-2) var(--gt-space-6);
+    margin: 0;
+
+    div {
+      display: flex;
+      align-items: baseline;
+      gap: var(--gt-space-2);
+    }
+
+    dt {
+      color: var(--gt-muted);
+      font-size: var(--gt-text-sm);
+    }
+
+    dd {
+      margin: 0;
+      font-family: var(--gt-mono);
+      font-size: var(--gt-text-lg);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  .xgame-lives {
+    color: #d61e18;
+    letter-spacing: 0.1em;
+  }
+
+  .xgame-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gt-space-2);
+  }
+</style>

@@ -38,7 +38,13 @@ const strings = {
     aboutAuthor: "About the author",
     notFoundTitle: "Page not found",
     notFoundText: "This page went up in smoke — or never existed. The wapuu is on it.",
-    notFoundHome: "Go to the latest posts"
+    notFoundHome: "Go to the latest posts",
+    gameUrl: `${baseUrl}game/`,
+    gameTitle: "Wapuu Chameleon Firefighter",
+    gameDescription:
+      "A pixel-art arcade game with my mascot: flames fall down the columns of a site and the Wapuu Chameleon Firefighter puts them out. Endless, with a high score to beat and share.",
+    gameIntro: "Flames are falling down the site. Change columns and let the extinguisher do the rest — how many can you put out?",
+    gamePlayPage: "Play it on its own page"
   },
   "pt-BR": {
     homeUrl: `${baseUrl}pt-br/`,
@@ -66,7 +72,13 @@ const strings = {
     aboutAuthor: "Sobre o autor",
     notFoundTitle: "Página não encontrada",
     notFoundText: "Esta página virou fumaça — ou nunca existiu. O wapuu já está cuidando disso.",
-    notFoundHome: "Ver os posts recentes"
+    notFoundHome: "Ver os posts recentes",
+    gameUrl: `${baseUrl}pt-br/jogo/`,
+    gameTitle: "Wapuu Camaleão Bombeiro",
+    gameDescription:
+      "Um jogo de fliperama em pixel art com o meu mascote: chamas descem pelas colunas de um site e o Wapuu Camaleão Bombeiro apaga. Infinito, com recorde para bater e compartilhar.",
+    gameIntro: "As chamas estão descendo pelo site. Troque de coluna e deixe o extintor fazer o resto — quantas você consegue apagar?",
+    gamePlayPage: "Jogar na página do jogo"
   }
 } as const;
 

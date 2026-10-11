@@ -1,0 +1,81 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ExtinguisherGame from "./ExtinguisherGame.astro";
+import ogEn from "../assets/game/og-en.png";
+import ogPt from "../assets/game/og-pt-br.png";
+import { about } from "../data/about";
+import { baseUrl, siteName, t, type Locale } from "../lib/i18n";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = t(locale);
+const en = t("en");
+const pt = t("pt-BR");
+const url = new URL(s.gameUrl, Astro.site).href;
+const credit = locale === "pt-BR" ? about["pt-BR"].wapuuCredit : about.en.wapuuCredit;
+---
+
+<BaseLayout
+  title={`${s.gameTitle} — ${siteName}`}
+  description={s.gameDescription}
+  locale={locale}
+  enUrl={en.gameUrl}
+  ptUrl={pt.gameUrl}
+  alternates={{ en: en.gameUrl, pt: pt.gameUrl }}
+  image={locale === "pt-BR" ? ogPt : ogEn}
+  jsonLd={{
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    name: s.gameTitle,
+    description: s.gameDescription,
+    url,
+    inLanguage: locale,
+    gamePlatform: "Web browser",
+    playMode: "SinglePlayer",
+    author: { "@type": "Person", name: siteName, url: new URL(baseUrl, Astro.site).href }
+  }}
+>
+  <div class="container game-page">
+    <header class="game-header">
+      <h1>{s.gameTitle}</h1>
+      <p>{s.gameIntro}</p>
+    </header>
+    <ExtinguisherGame locale={locale} />
+    <p class="game-credit">{credit}</p>
+  </div>
+</BaseLayout>
+
+<style lang="scss">
+  .game-page {
+    display: grid;
+    gap: var(--gt-space-6);
+    max-width: 64rem;
+    padding-block: var(--gt-space-8) var(--gt-space-12);
+  }
+
+  .game-header {
+    text-align: center;
+
+    h1 {
+      margin: 0 0 var(--gt-space-3);
+      font-size: var(--gt-h1);
+      letter-spacing: -0.03em;
+    }
+
+    p {
+      margin: 0 auto;
+      max-width: 40rem;
+      font-size: var(--gt-text-lg);
+    }
+  }
+
+  .game-credit {
+    margin: 0;
+    color: var(--gt-muted);
+    font-size: var(--gt-text-sm);
+    text-align: center;
+  }
+</style>

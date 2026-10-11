@@ -23,28 +23,32 @@ const s = t(Astro.props.locale);
 
 <script is:inline>
   (() => {
+    // The 404 has a header per language, so a button per language: each run
+    // wires the buttons not wired yet, and every button shows the same mode.
     const modes = ["auto", "light", "dark"];
     const root = document.documentElement;
-    const button = document.querySelector(".theme-toggle");
-    if (!button) return;
-    const labels = JSON.parse(button.dataset.labels);
-    const label = button.querySelector(".theme-label");
+    const buttons = [...document.querySelectorAll(".theme-toggle")];
 
     const apply = (mode) => {
       root.dataset.themeMode = mode;
       if (mode === "auto") delete root.dataset.theme;
       else root.dataset.theme = mode;
-      label.textContent = labels[mode];
+      for (const button of buttons)
+        button.querySelector(".theme-label").textContent = JSON.parse(button.dataset.labels)[mode];
       try {
         localStorage.setItem("theme-mode", mode);
       } catch {}
     };
 
     apply(root.dataset.themeMode || "auto");
-    button.addEventListener("click", () => {
-      const current = modes.indexOf(root.dataset.themeMode || "auto");
-      apply(modes[(current + 1) % modes.length]);
-    });
+    for (const button of buttons) {
+      if (button.dataset.wired) continue;
+      button.dataset.wired = "1";
+      button.addEventListener("click", () => {
+        const current = modes.indexOf(root.dataset.themeMode || "auto");
+        apply(modes[(current + 1) % modes.length]);
+      });
+    }
   })();
 </script>
 

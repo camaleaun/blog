@@ -1,0 +1,123 @@
+---
+import Brand from "./Brand.astro";
+import LanguageSwitch from "./LanguageSwitch.astro";
+import ThemeToggle from "./ThemeToggle.astro";
+import { t, type Locale } from "../lib/i18n";
+
+interface Props {
+  locale: Locale;
+  enUrl: string;
+  ptUrl: string;
+  /** Set on the 404, where the header exists in both languages (see BaseLayout). */
+  tagged?: boolean;
+}
+
+const { locale, enUrl, ptUrl, tagged = false } = Astro.props;
+const s = t(locale);
+const current = (url: string) => (Astro.url.pathname === url ? "page" : undefined);
+---
+
+<a class="skip-link" href="#main" data-locale={tagged ? locale : undefined}>{s.skip}</a>
+
+<header class="site-header" data-locale={tagged ? locale : undefined}>
+  <div class="container site-header-inner">
+    <Brand locale={locale} />
+    <nav class="site-tools" aria-label={s.menu}>
+      <a class="nav-link" href={s.pluginsUrl} aria-current={current(s.pluginsUrl)}>{s.plugins}</a>
+      <a class="nav-link" href={s.aboutUrl} aria-current={current(s.aboutUrl)}>{s.about}</a>
+      <LanguageSwitch locale={locale} enUrl={enUrl} ptUrl={ptUrl} />
+    </nav>
+    <ThemeToggle locale={locale} />
+  </div>
+</header>
+
+<style lang="scss">
+  @use "../styles/mq" as *;
+
+  // Sticky: stays at the top while scrolling, translucent over the content.
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom: 1px solid var(--gt-border);
+    background: color-mix(in srgb, var(--gt-paper) 88%, transparent);
+    -webkit-backdrop-filter: saturate(1.6) blur(12px);
+    backdrop-filter: saturate(1.6) blur(12px);
+  }
+
+  @supports not (backdrop-filter: blur(1px)) {
+    .site-header {
+      background: var(--gt-paper);
+    }
+  }
+
+  .site-header-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--gt-space-2) var(--gt-space-4);
+    padding-block: var(--gt-space-3);
+  }
+
+  .site-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--gt-space-1);
+    margin-left: auto;
+  }
+
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--gt-target);
+    padding-inline: var(--gt-space-3);
+    border-radius: var(--gt-radius-full);
+    color: var(--gt-ink);
+    font-size: var(--gt-text-sm);
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color var(--gt-duration) var(--gt-ease);
+  }
+
+  .nav-link:hover {
+    background: var(--gt-surface);
+    color: var(--gt-ink);
+  }
+
+  .nav-link[aria-current="page"] {
+    background: var(--gt-primary-soft);
+    font-weight: 650;
+  }
+
+  // A thin rule between the page link and the language links.
+  .site-tools :global(.languages) {
+    margin-left: var(--gt-space-2);
+    padding-left: var(--gt-space-3);
+    border-left: 1px solid var(--gt-border);
+  }
+
+  @include mobile {
+    .site-header-inner {
+      justify-content: space-between;
+    }
+
+    .site-tools {
+      margin-left: 0;
+      order: 3;
+      width: 100%;
+      margin-inline: calc(-1 * var(--gt-space-2));
+    }
+
+    .nav-link,
+    .site-tools :global(.languages a) {
+      padding-inline: var(--gt-space-2);
+    }
+
+    .site-tools :global(.languages) {
+      margin-left: 0;
+      padding-left: 0;
+      border-left: 0;
+    }
+  }
+</style>

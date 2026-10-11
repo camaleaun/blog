@@ -82,6 +82,13 @@ a:hover {
   border: 0;
 }
 
+// The 404 carries both languages; the one that is not the page's is gone
+// (display: none also takes it out of the accessibility tree).
+:root:not([lang="pt-BR"]) [data-locale="pt-BR"],
+:root[lang="pt-BR"] [data-locale="en"] {
+  display: none !important;
+}
+
 .skip-link {
   position: absolute;
   top: var(--gt-space-2);

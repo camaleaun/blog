@@ -18,6 +18,7 @@ export const GET: APIRoute = async ({ site }) => {
 - Home (Português): ${url(t("pt-BR").homeUrl)}
 - Plugins: ${url(t("en").pluginsUrl)} (Português: ${url(t("pt-BR").pluginsUrl)})
 - About the author: ${url(t("en").aboutUrl)} (Português: ${url(t("pt-BR").aboutUrl)})
+- ${t("en").gameTitle}, a browser game with the author's mascot: ${url(t("en").gameUrl)} (Português: ${url(t("pt-BR").gameUrl)})
 - GitHub: ${githubUrl}
 
 ## Posts (English)

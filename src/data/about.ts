@@ -53,13 +53,13 @@ export const about: Record<Locale, About> = {
     mascotHeading: "Why a chameleon?",
     mascot: [
       "camaleaun comes from camaleão, Portuguese for chameleon: every project asks for something different, and the job is to adapt without losing your own color.",
-      "My wapuu is a chameleon in firefighter gear holding a WordPress extinguisher — for the days the work is putting out fires: the broken site, the update that went wrong, the deadline that is tomorrow.",
+      "My wapuu, the Wapuu Chameleon Firefighter, is a chameleon in firefighter gear holding a WordPress extinguisher — for the days the work is putting out fires: the broken site, the update that went wrong, the deadline that is tomorrow.",
       "There is a true story behind the gear, too. At WordCamp São Paulo 2019, where I was a volunteer, we smelled something burning. I found an extinguisher and got ready. It was an electrical fire, and it went out as soon as the device was unplugged — I didn’t need to put anything out, but I was prepared."
     ],
     wapuuCredit: "Wapuu is the WordPress community’s mascot, created by Kazuko Kaneuchi and shared under the GPL.",
     linksHeading: "Find me",
     links,
-    mascotAlt: "A green chameleon wapuu in firefighter gear, hugging a red extinguisher with the WordPress logo, its tail curled in a spiral",
+    mascotAlt: "The Wapuu Chameleon Firefighter: a green chameleon wapuu in firefighter gear, hugging a red extinguisher with the WordPress logo, its tail curled in a spiral",
     photoAlt: "Gilberto Tavares smiling outdoors, with a laptop in front of him"
   },
   "pt-BR": {
@@ -83,13 +83,13 @@ export const about: Record<Locale, About> = {
     mascotHeading: "Por que um camaleão?",
     mascot: [
       "camaleaun vem de camaleão: cada projeto pede uma coisa diferente, e o trabalho é se adaptar sem perder a própria cor.",
-      "Meu wapuu é um camaleão de bombeiro abraçado a um extintor do WordPress — para os dias em que o trabalho é apagar incêndio: o site fora do ar, a atualização que deu errado, o prazo que é amanhã.",
+      "Meu wapuu, o Wapuu Camaleão Bombeiro, é um camaleão de bombeiro abraçado a um extintor do WordPress — para os dias em que o trabalho é apagar incêndio: o site fora do ar, a atualização que deu errado, o prazo que é amanhã.",
       "E tem uma história real por trás da roupa. No WordCamp São Paulo 2019, onde eu era voluntário, sentimos cheiro de queimado. Localizei um extintor e me preparei. Era um fogo elétrico, e ele se apagou assim que o aparelho foi desligado da tomada — não precisei apagar nada, mas estava preparado."
     ],
     wapuuCredit: "O wapuu é o mascote da comunidade WordPress, criado por Kazuko Kaneuchi e compartilhado sob a GPL.",
     linksHeading: "Onde me encontrar",
     links,
-    mascotAlt: "Um wapuu camaleão verde com roupa de bombeiro, abraçado a um extintor vermelho com o logo do WordPress, com a cauda enrolada em espiral",
+    mascotAlt: "O Wapuu Camaleão Bombeiro: um wapuu camaleão verde com roupa de bombeiro, abraçado a um extintor vermelho com o logo do WordPress, com a cauda enrolada em espiral",
     photoAlt: "Gilberto Tavares sorrindo ao ar livre, com um notebook à frente"
   }
 };
