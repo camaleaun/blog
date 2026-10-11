@@ -1,0 +1,232 @@
+@use "tokens";
+@use "mq" as *;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--gt-paper);
+  color: var(--gt-ink);
+  font-family: var(--gt-font);
+  font-size: var(--gt-text);
+  line-height: var(--gt-leading);
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+picture,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+img {
+  height: auto;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--gt-primary);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.15em;
+}
+
+a:hover {
+  color: var(--gt-primary-strong);
+}
+
+:focus-visible {
+  outline: 2px solid var(--gt-primary);
+  outline-offset: 2px;
+  border-radius: var(--gt-radius-sm);
+}
+
+::selection {
+  background: var(--gt-primary-soft);
+  color: var(--gt-ink);
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: var(--gt-space-2);
+  left: var(--gt-space-2);
+  z-index: 100;
+  padding: var(--gt-space-2) var(--gt-space-4);
+  border-radius: var(--gt-radius-sm);
+  background: var(--gt-ink);
+  color: var(--gt-paper);
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: none;
+  color: var(--gt-paper);
+}
+
+.container {
+  width: min(100% - 2 * var(--gt-gutter), var(--gt-width));
+  margin-inline: auto;
+}
+
+main {
+  flex: 1;
+  padding-block: var(--gt-space-8) var(--gt-space-16);
+
+  @include desktop {
+    padding-block: var(--gt-space-12) var(--gt-space-24);
+  }
+}
+
+// Markdown body of a post.
+.prose {
+  max-width: var(--gt-reading);
+  font-size: var(--gt-text-lg);
+  line-height: var(--gt-leading-prose);
+
+  > * {
+    margin-block: 0;
+  }
+
+  > * + * {
+    margin-top: 1.1em;
+  }
+
+  h2,
+  h3 {
+    margin-top: 2em;
+  }
+
+  h2 {
+    font-size: var(--gt-h2);
+  }
+
+  h3 {
+    font-size: var(--gt-h3);
+  }
+
+  ul,
+  ol {
+    padding-left: 1.4em;
+  }
+
+  li + li {
+    margin-top: 0.4em;
+  }
+
+  li::marker {
+    color: var(--gt-primary);
+  }
+
+  strong {
+    font-weight: 650;
+  }
+
+  blockquote {
+    margin-inline: 0;
+    padding-left: var(--gt-space-4);
+    border-left: 3px solid var(--gt-primary);
+    color: var(--gt-muted);
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--gt-border);
+    margin-block: 2em;
+  }
+
+  :not(pre) > code {
+    padding: 0.1em 0.35em;
+    border-radius: var(--gt-radius-sm);
+    background: var(--gt-surface);
+    border: 1px solid var(--gt-border);
+    font-family: var(--gt-mono);
+    font-size: 0.875em;
+  }
+
+  pre {
+    padding: var(--gt-space-4);
+    border-radius: var(--gt-radius);
+    border: 1px solid var(--gt-border);
+    overflow-x: auto;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  pre code {
+    font-family: var(--gt-mono);
+  }
+
+  img {
+    border-radius: var(--gt-radius);
+  }
+}
+
+// Shiki dual themes: follow the active color scheme.
+.astro-code,
+.astro-code span {
+  color: light-dark(var(--shiki-light), var(--shiki-dark));
+  background-color: light-dark(var(--shiki-light-bg), var(--shiki-dark-bg));
+}
+
+// Hashtags at the end of a post (rehypeHashtags).
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gt-space-2);
+  padding: 0;
+  list-style: none;
+  font-size: var(--gt-text-sm);
+
+  li {
+    margin: 0;
+    padding: var(--gt-space-1) var(--gt-space-3);
+    border-radius: var(--gt-radius-full);
+    background: var(--gt-primary-soft);
+    color: var(--gt-ink);
+  }
+}
+
+.prose .tags {
+  margin-top: var(--gt-space-8);
+  padding-left: 0;
+
+  li {
+    margin: 0;
+  }
+}

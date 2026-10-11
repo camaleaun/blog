@@ -1,0 +1,74 @@
+---
+import { t, type Locale } from "../lib/i18n";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = t(locale);
+---
+
+<a class="brand" href={s.homeUrl} aria-label={s.home}>
+  <svg class="brand-mark" viewBox="0 0 64 64" width="40" height="40" aria-hidden="true" focusable="false">
+    <rect width="64" height="64" rx="14" class="brand-square" />
+    <path
+      d="M47 22A18 18 0 1 0 50 33C50 26.5 44.7 21.5 38.3 21.5 32 21.5 27 26.4 27 32.4 27 37.2 30.7 41 35.3 41 38.6 41 41 38.6 41 35.6"
+      fill="none"
+      stroke="#fff"
+      stroke-width="5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <circle cx="45.5" cy="16.5" r="3.2" class="brand-eye" />
+  </svg>
+  <span class="brand-text">
+    <span class="brand-name">Gilberto Tavares</span>
+    <span class="brand-handle">camaleaun</span>
+  </span>
+</a>
+
+<style lang="scss">
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gt-space-3);
+    min-height: var(--gt-target);
+    color: var(--gt-ink);
+    text-decoration: none;
+  }
+
+  .brand:hover {
+    color: var(--gt-ink);
+  }
+
+  .brand-mark {
+    flex: none;
+  }
+
+  .brand-square {
+    fill: #0f6d5a;
+  }
+
+  .brand-eye {
+    fill: var(--gt-accent);
+  }
+
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+  }
+
+  .brand-name {
+    font-weight: 700;
+    font-size: 1.0625rem;
+    letter-spacing: -0.02em;
+  }
+
+  .brand-handle {
+    font-weight: 500;
+    font-size: var(--gt-text-sm);
+    color: var(--gt-primary);
+  }
+</style>

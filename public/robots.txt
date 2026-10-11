@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://camaleaun.github.io/sitemap-index.xml

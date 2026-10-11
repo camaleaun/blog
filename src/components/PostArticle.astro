@@ -1,0 +1,160 @@
+---
+import { Picture } from "astro:assets";
+import { render } from "astro:content";
+import Icon from "./Icon.astro";
+import { formatDate } from "../lib/formatDate";
+import { isoDate } from "../lib/isoDate";
+import { t } from "../lib/i18n";
+import type { Post } from "../lib/posts";
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const s = t(post.locale);
+const { Content } = await render(post.entry);
+const otherLocale = post.locale === "en" ? "pt-BR" : "en";
+---
+
+<article class="container post">
+  <header class:list={["post-header", { "post-header--media": post.thumbnail }]}>
+    <div class="post-heading">
+      <a class="post-back" href={s.homeUrl}>
+        <Icon name="arrowLeft" size={18} />
+        {s.allPosts}
+      </a>
+      <h1>{post.title}</h1>
+      <p class="post-meta">
+        <time datetime={isoDate(post.date)}>{formatDate(post.date, post.locale)}</time>
+        <span aria-hidden="true">·</span>
+        <span>{s.readingTime(post.minutes)}</span>
+        {post.translationHref && (
+          <>
+            <span aria-hidden="true">·</span>
+            <a href={post.translationHref} hreflang={otherLocale} lang={otherLocale}>{s.readIn}</a>
+          </>
+        )}
+      </p>
+    </div>
+    {post.thumbnail && (
+      <div class="post-cover">
+        <Picture
+          src={post.thumbnail}
+          formats={["avif", "webp"]}
+          widths={[360, 480, 640, 800, 1024]}
+          sizes="(width >= 80rem) 32rem, (width > 48.875rem) 40vw, (width > 30rem) 28rem, 100vw"
+          alt=""
+          loading="eager"
+          fetchpriority="high"
+          decoding="sync"
+        />
+      </div>
+    )}
+  </header>
+
+  <div class="prose">
+    <Content />
+  </div>
+
+  <footer class="post-footer">
+    <a class="post-back" href={s.homeUrl}>
+      <Icon name="arrowLeft" size={18} />
+      {s.allPosts}
+    </a>
+  </footer>
+</article>
+
+<style lang="scss">
+  @use "../styles/mq" as *;
+
+  .post {
+    max-width: 64rem;
+  }
+
+  .post-header {
+    display: grid;
+    gap: var(--gt-space-8);
+    margin-bottom: var(--gt-space-8);
+    padding-bottom: var(--gt-space-8);
+    border-bottom: 1px solid var(--gt-border);
+
+    @include desktop {
+      margin-bottom: var(--gt-space-12);
+      padding-bottom: var(--gt-space-12);
+    }
+  }
+
+  .post-header--media {
+    @include desktop {
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+      align-items: center;
+      gap: var(--gt-space-12);
+    }
+  }
+
+  .post-heading {
+    max-width: var(--gt-reading);
+
+    h1 {
+      margin: var(--gt-space-4) 0;
+      font-size: var(--gt-h1);
+      letter-spacing: -0.03em;
+    }
+  }
+
+  .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 var(--gt-space-2);
+    margin: 0;
+    color: var(--gt-muted);
+    font-size: var(--gt-text-sm);
+
+    a {
+      display: inline-flex;
+      align-items: center;
+      min-height: var(--gt-target);
+      font-weight: 500;
+    }
+  }
+
+  .post-cover {
+    max-width: 28rem;
+
+    @include desktop {
+      max-width: none;
+    }
+
+    :global(img) {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: var(--gt-radius-lg);
+      border: 1px solid var(--gt-border);
+      box-shadow: var(--gt-shadow-lg);
+    }
+  }
+
+  .post-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gt-space-2);
+    min-height: var(--gt-target);
+    color: var(--gt-primary);
+    font-size: var(--gt-text-sm);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .post-back:hover {
+    text-decoration: underline;
+  }
+
+  .post-footer {
+    margin-top: var(--gt-space-12);
+    padding-top: var(--gt-space-6);
+    border-top: 1px solid var(--gt-border);
+  }
+</style>

@@ -1,0 +1,266 @@
+---
+import { Picture } from "astro:assets";
+import Icon from "./Icon.astro";
+import wapuu from "../assets/wapuu.webp";
+import avatar from "../assets/avatar.jpg";
+import { about } from "../data/about";
+import type { Locale } from "../lib/i18n";
+
+interface Props {
+  locale: Locale;
+}
+
+const a = about[Astro.props.locale];
+---
+
+<article class="container about">
+  <header class="about-hero">
+    <div class="about-intro">
+      <Picture
+        src={avatar}
+        formats={["avif", "webp"]}
+        widths={[112, 224, 336]}
+        sizes="7rem"
+        alt={a.photoAlt}
+        class="about-photo"
+        loading="eager"
+      />
+      <h1>{a.heading}</h1>
+      {a.intro.map((paragraph, index) => <p class:list={{ "about-lead": index === 0 }}>{paragraph}</p>)}
+    </div>
+    <figure class="about-mascot">
+      <Picture
+        src={wapuu}
+        formats={["avif", "webp"]}
+        widths={[240, 360, 480, 720]}
+        sizes="(width > 48.875rem) 22rem, 16rem"
+        alt={a.mascotAlt}
+        loading="eager"
+        fetchpriority="high"
+        decoding="sync"
+      />
+    </figure>
+  </header>
+
+  <section aria-labelledby="projects" class="about-section">
+    <h2 id="projects">{a.projectsHeading}</h2>
+    <ul class="projects" role="list">
+      {a.projects.map((project) => (
+        <li class="project">
+          <h3><a href={project.href}>{project.name}</a></h3>
+          <p>{project.text}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section aria-labelledby="chameleon" class="about-section about-prose">
+    <h2 id="chameleon">{a.mascotHeading}</h2>
+    {a.mascot.map((paragraph) => <p>{paragraph}</p>)}
+    <p class="about-credit">{a.wapuuCredit}</p>
+  </section>
+
+  <section aria-labelledby="links" class="about-section">
+    <h2 id="links">{a.linksHeading}</h2>
+    <ul class="links" role="list">
+      {a.links.map((link) => (
+        <li>
+          <a href={link.href} rel="me">
+            {link.label}
+            <Icon name="arrowRight" size={16} />
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</article>
+
+<style lang="scss">
+  @use "../styles/mq" as *;
+
+  .about {
+    max-width: 64rem;
+  }
+
+  .about-hero {
+    display: grid;
+    gap: var(--gt-space-8);
+    align-items: center;
+    padding-bottom: var(--gt-space-8);
+    border-bottom: 1px solid var(--gt-border);
+
+    @include desktop {
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+      gap: var(--gt-space-12);
+      padding-bottom: var(--gt-space-12);
+    }
+  }
+
+  .about-intro {
+    max-width: var(--gt-reading);
+
+    h1 {
+      margin: 0 0 var(--gt-space-6);
+      font-size: var(--gt-h1);
+      letter-spacing: -0.03em;
+    }
+
+    p {
+      margin: 0 0 var(--gt-space-4);
+      font-size: var(--gt-text-lg);
+      line-height: var(--gt-leading-prose);
+    }
+  }
+
+  .about-intro :global(.about-photo) {
+    width: 7rem;
+    height: 7rem;
+    margin-bottom: var(--gt-space-6);
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: 60% 30%;
+    border: 3px solid var(--gt-paper);
+    box-shadow: 0 0 0 3px var(--gt-primary), var(--gt-shadow-lg);
+  }
+
+  .about-lead {
+    font-weight: 500;
+  }
+
+  .about-mascot {
+    order: -1;
+    width: min(16rem, 70%);
+    margin: 0;
+
+    @include desktop {
+      order: 0;
+      width: 100%;
+      max-width: 22rem;
+      justify-self: end;
+    }
+
+    :global(img) {
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  .about-section {
+    margin-top: var(--gt-space-12);
+
+    h2 {
+      margin: 0 0 var(--gt-space-6);
+      font-size: var(--gt-h2);
+    }
+  }
+
+  .about-prose {
+    max-width: var(--gt-reading);
+
+    p {
+      margin: 0 0 var(--gt-space-4);
+      font-size: var(--gt-text-lg);
+      line-height: var(--gt-leading-prose);
+    }
+  }
+
+  .about-credit {
+    color: var(--gt-muted);
+    font-size: var(--gt-text-sm) !important;
+  }
+
+  .projects {
+    display: grid;
+    gap: var(--gt-space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    @include above-mobile {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .project:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .project {
+    position: relative;
+    padding: var(--gt-space-6);
+    border: 1px solid var(--gt-border);
+    border-radius: var(--gt-radius-lg);
+    background: var(--gt-surface);
+    transition:
+      border-color var(--gt-duration) var(--gt-ease),
+      box-shadow var(--gt-duration) var(--gt-ease);
+
+    h3 {
+      margin: 0 0 var(--gt-space-2);
+      font-size: var(--gt-h3);
+    }
+
+    a {
+      color: var(--gt-ink);
+      text-decoration: none;
+    }
+
+    a::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+    }
+
+    a:focus-visible {
+      outline: none;
+    }
+
+    a:focus-visible::after {
+      outline: 2px solid var(--gt-primary);
+      outline-offset: -2px;
+    }
+
+    p {
+      margin: 0;
+      color: var(--gt-muted);
+    }
+  }
+
+  .project:hover {
+    border-color: color-mix(in srgb, var(--gt-primary) 35%, var(--gt-border));
+    box-shadow: var(--gt-shadow);
+
+    a {
+      color: var(--gt-primary);
+    }
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gt-space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    a {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--gt-space-2);
+      min-height: var(--gt-target);
+      padding-inline: var(--gt-space-4);
+      border: 1px solid var(--gt-border);
+      border-radius: var(--gt-radius-full);
+      color: var(--gt-ink);
+      font-weight: 500;
+      text-decoration: none;
+      transition: background-color var(--gt-duration) var(--gt-ease);
+    }
+
+    a:hover {
+      background: var(--gt-primary-soft);
+      color: var(--gt-ink);
+    }
+  }
+</style>

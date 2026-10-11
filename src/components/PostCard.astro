@@ -1,0 +1,213 @@
+---
+import { Picture } from "astro:assets";
+import { formatDate } from "../lib/formatDate";
+import { isoDate } from "../lib/isoDate";
+import { t } from "../lib/i18n";
+import { truncateSummary } from "../lib/truncateSummary";
+import type { Post } from "../lib/posts";
+
+interface Props {
+  post: Post;
+  featured?: boolean;
+}
+
+const { post, featured = false } = Astro.props;
+const s = t(post.locale);
+const sizes = featured
+  ? "(width >= 80rem) 39rem, (width > 48.875rem) 50vw, (width > 30rem) calc(100vw - 4rem), 100vw"
+  : "(width >= 80rem) 25rem, (width >= 60rem) 31vw, (width > 30rem) 47vw, 100vw";
+---
+
+<article
+  class:list={["card", { "card--featured": featured }]}
+  style={featured && post.thumbnail ? `--ratio: ${post.thumbnail.width} / ${post.thumbnail.height}` : undefined}
+>
+  <div class="card-media">
+    {post.thumbnail ? (
+      <Picture
+        src={post.thumbnail}
+        formats={["avif", "webp"]}
+        widths={featured ? [480, 640, 800, 1024] : [320, 480, 640, 800]}
+        sizes={sizes}
+        alt=""
+        loading={featured ? "eager" : "lazy"}
+        fetchpriority={featured ? "high" : "auto"}
+        decoding={featured ? "sync" : "async"}
+      />
+    ) : (
+      <div class="card-placeholder" />
+    )}
+  </div>
+  <div class="card-body">
+    <h2 class="card-title">
+      <a href={post.href}>{post.title}</a>
+    </h2>
+    <p class="card-excerpt">{truncateSummary(post.description, featured ? 40 : 24)}</p>
+    <p class="card-meta">
+      <time datetime={isoDate(post.date)}>{formatDate(post.date, post.locale)}</time>
+      <span aria-hidden="true">·</span>
+      <span>{s.readingTime(post.minutes)}</span>
+    </p>
+  </div>
+</article>
+
+<style lang="scss">
+  @use "../styles/mq" as *;
+
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid var(--gt-border);
+    border-radius: var(--gt-radius-lg);
+    background: var(--gt-surface);
+    overflow: hidden;
+    box-shadow: var(--gt-shadow);
+    transition:
+      box-shadow var(--gt-duration) var(--gt-ease),
+      transform var(--gt-duration) var(--gt-ease),
+      border-color var(--gt-duration) var(--gt-ease);
+  }
+
+  .card:hover {
+    box-shadow: var(--gt-shadow-lg);
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--gt-primary) 35%, var(--gt-border));
+  }
+
+  .card-media {
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: var(--gt-deep);
+
+    :global(picture),
+    :global(img) {
+      width: 100%;
+      height: 100%;
+    }
+
+    :global(img) {
+      object-fit: cover;
+      transition: transform calc(var(--gt-duration) * 2) var(--gt-ease);
+    }
+  }
+
+  .card:hover .card-media :global(img) {
+    transform: scale(1.03);
+  }
+
+  .card-placeholder {
+    width: 100%;
+    height: 100%;
+    background:
+      radial-gradient(circle at 85% 15%, rgb(198 243 91 / 0.3), transparent 55%),
+      linear-gradient(135deg, var(--gt-primary), var(--gt-deep));
+  }
+
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gt-space-3);
+    flex: 1;
+    padding: var(--gt-space-4) var(--gt-space-4) var(--gt-space-6);
+
+    @include above-mobile {
+      padding: var(--gt-space-6);
+    }
+  }
+
+  .card-title {
+    margin: 0;
+    font-size: var(--gt-h3);
+
+    a {
+      color: var(--gt-ink);
+      text-decoration: none;
+    }
+
+    // The title's link covers the whole card: one target, one stop.
+    a::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+    }
+
+    a:focus-visible {
+      outline: none;
+    }
+
+    a:focus-visible::after {
+      outline: 2px solid var(--gt-primary);
+      outline-offset: -2px;
+      border-radius: var(--gt-radius-lg);
+    }
+  }
+
+  .card:hover .card-title a {
+    color: var(--gt-primary);
+  }
+
+  .card-excerpt {
+    margin: 0;
+    color: var(--gt-ink);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+  }
+
+  .card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gt-space-2);
+    margin: auto 0 0;
+    color: var(--gt-muted);
+    font-size: var(--gt-text-sm);
+  }
+
+  // Featured: side by side on desktop, bigger type everywhere. Below desktop
+  // the image keeps its own proportions (not every thumbnail is square).
+  .card--featured {
+    .card-media {
+      aspect-ratio: var(--ratio, 1);
+
+      @include desktop {
+        aspect-ratio: auto;
+        min-height: 100%;
+      }
+    }
+
+    .card-title {
+      font-size: var(--gt-h2);
+    }
+
+    .card-excerpt {
+      font-size: var(--gt-text-lg);
+      -webkit-line-clamp: 4;
+      line-clamp: 4;
+    }
+
+    @include desktop {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: stretch;
+
+      .card-body {
+        justify-content: center;
+        gap: var(--gt-space-4);
+        padding: var(--gt-space-12);
+      }
+
+      .card-title {
+        font-size: clamp(1.75rem, 1rem + 1.5vw, 2.5rem);
+      }
+
+      .card-meta {
+        margin-top: var(--gt-space-2);
+      }
+    }
+  }
+</style>

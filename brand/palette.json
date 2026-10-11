@@ -1,0 +1,29 @@
+{
+  "$comment": "Source of truth for the brand colors. `npm run brand` checks every pair in `contrast` and writes src/styles/_colors.scss.",
+  "colors": {
+    "primary":        { "light": "#0f6d5a", "dark": "#7de2bf", "use": "Links, focus, the mark's square" },
+    "primary-strong": { "light": "#0b5c4c", "dark": "#a6efd4", "use": "Hover and pressed states" },
+    "primary-soft":   { "light": "#e3f1ec", "dark": "#16352d", "use": "Tinted backgrounds, selected items" },
+    "accent":         { "light": "#c6f35b", "dark": "#c6f35b", "use": "The mark's eye, small highlights; never text on light" },
+    "deep":           { "light": "#0b3d33", "dark": "#0b3d33", "use": "Brand backgrounds: social image, gradient end" },
+    "ink":            { "light": "#1e1f22", "dark": "#eef0f1", "use": "Text" },
+    "muted":          { "light": "#5b6168", "dark": "#a9b0b6", "use": "Secondary text: dates, reading time, captions" },
+    "paper":          { "light": "#ffffff", "dark": "#121418", "use": "Page background" },
+    "surface":        { "light": "#f7f5f0", "dark": "#1a1d1f", "use": "Cards, panels, code blocks" },
+    "border":         { "light": "#e2ddd3", "dark": "#2c3135", "use": "Lines and dividers" }
+  },
+  "contrast": [
+    { "fg": "ink",     "bg": "paper",   "min": 4.5 },
+    { "fg": "ink",     "bg": "surface", "min": 4.5 },
+    { "fg": "muted",   "bg": "paper",   "min": 4.5 },
+    { "fg": "muted",   "bg": "surface", "min": 4.5 },
+    { "fg": "primary", "bg": "paper",   "min": 4.5 },
+    { "fg": "primary", "bg": "surface", "min": 4.5 },
+    { "fg": "primary-strong", "bg": "paper", "min": 4.5 },
+    { "fg": "primary", "bg": "primary-soft", "min": 4.5 },
+    { "fg": "ink",     "bg": "primary-soft", "min": 4.5 },
+    { "fg": "accent",  "bg": "deep",    "min": 4.5, "modes": ["light"] },
+    { "fg": "#ffffff", "bg": "primary", "min": 4.5, "modes": ["light"] },
+    { "fg": "#ffffff", "bg": "deep",    "min": 4.5, "modes": ["light"] }
+  ]
+}

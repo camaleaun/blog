@@ -1,0 +1,96 @@
+---
+import { Picture } from "astro:assets";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Icon from "../components/Icon.astro";
+import wapuu from "../assets/wapuu.webp";
+import { about } from "../data/about";
+import { siteName, t } from "../lib/i18n";
+
+// One page for both languages (GitHub Pages serves a single 404.html).
+const en = t("en");
+const pt = t("pt-BR");
+---
+
+<BaseLayout title={`${en.notFoundTitle} — ${siteName}`} description={en.notFoundText} locale="en">
+  <div class="container not-found">
+    <Picture
+      src={wapuu}
+      formats={["avif", "webp"]}
+      widths={[200, 300, 400]}
+      sizes="12rem"
+      alt={about.en.mascotAlt}
+      loading="eager"
+      fetchpriority="high"
+    />
+    <h1>{en.notFoundTitle}</h1>
+    <p>{en.notFoundText}</p>
+    <p lang="pt-BR" class="not-found-pt">{pt.notFoundTitle}. {pt.notFoundText}</p>
+    <ul class="not-found-links" role="list">
+      <li>
+        <a href={en.homeUrl}>{en.notFoundHome}<Icon name="arrowRight" size={16} /></a>
+      </li>
+      <li lang="pt-BR">
+        <a href={pt.homeUrl} hreflang="pt-BR">{pt.notFoundHome}<Icon name="arrowRight" size={16} /></a>
+      </li>
+    </ul>
+  </div>
+</BaseLayout>
+
+<style lang="scss">
+  .not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 40rem;
+    text-align: center;
+
+    :global(img) {
+      width: 12rem;
+      height: auto;
+      margin-bottom: var(--gt-space-6);
+    }
+
+    h1 {
+      margin: 0 0 var(--gt-space-4);
+      font-size: var(--gt-h1);
+      letter-spacing: -0.03em;
+    }
+
+    p {
+      margin: 0 0 var(--gt-space-2);
+      font-size: var(--gt-text-lg);
+    }
+  }
+
+  .not-found-pt {
+    color: var(--gt-muted);
+  }
+
+  .not-found-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--gt-space-3);
+    margin: var(--gt-space-8) 0 0;
+    padding: 0;
+    list-style: none;
+
+    a {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--gt-space-2);
+      min-height: var(--gt-target);
+      padding-inline: var(--gt-space-4);
+      border-radius: var(--gt-radius-full);
+      background: var(--gt-primary);
+      color: var(--gt-paper);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    a:hover {
+      background: var(--gt-primary-strong);
+      color: var(--gt-paper);
+    }
+  }
+</style>

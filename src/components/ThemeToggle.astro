@@ -1,0 +1,89 @@
+---
+import Icon from "./Icon.astro";
+import { t, type Locale } from "../lib/i18n";
+
+interface Props {
+  locale: Locale;
+}
+
+const s = t(Astro.props.locale);
+---
+
+<button
+  class="theme-toggle"
+  type="button"
+  data-labels={JSON.stringify(s.themeModes)}
+>
+  <Icon name="auto" size={18} class="theme-icon theme-icon-auto" />
+  <Icon name="sun" size={18} class="theme-icon theme-icon-light" />
+  <Icon name="moon" size={18} class="theme-icon theme-icon-dark" />
+  <span class="visually-hidden">{s.theme}:</span>
+  <span class="theme-label">{s.themeModes.auto}</span>
+</button>
+
+<script is:inline>
+  (() => {
+    const modes = ["auto", "light", "dark"];
+    const root = document.documentElement;
+    const button = document.querySelector(".theme-toggle");
+    if (!button) return;
+    const labels = JSON.parse(button.dataset.labels);
+    const label = button.querySelector(".theme-label");
+
+    const apply = (mode) => {
+      root.dataset.themeMode = mode;
+      if (mode === "auto") delete root.dataset.theme;
+      else root.dataset.theme = mode;
+      label.textContent = labels[mode];
+      try {
+        localStorage.setItem("theme-mode", mode);
+      } catch {}
+    };
+
+    apply(root.dataset.themeMode || "auto");
+    button.addEventListener("click", () => {
+      const current = modes.indexOf(root.dataset.themeMode || "auto");
+      apply(modes[(current + 1) % modes.length]);
+    });
+  })();
+</script>
+
+<style lang="scss">
+  .theme-toggle {
+    display: none;
+    align-items: center;
+    gap: var(--gt-space-2);
+    min-height: var(--gt-target);
+    min-width: var(--gt-target);
+    padding-inline: var(--gt-space-3);
+    border: 1px solid var(--gt-border);
+    border-radius: var(--gt-radius-full);
+    background: transparent;
+    color: var(--gt-ink);
+    font: inherit;
+    font-size: var(--gt-text-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--gt-duration) var(--gt-ease);
+  }
+
+  .theme-toggle:hover {
+    background: var(--gt-surface);
+  }
+
+  // The button only works with JavaScript; the head script adds .js.
+  :global(.js) .theme-toggle {
+    display: inline-flex;
+  }
+
+  .theme-toggle :global(.theme-icon) {
+    display: none;
+  }
+
+  :global(:root:not([data-theme-mode])) .theme-toggle :global(.theme-icon-auto),
+  :global([data-theme-mode="auto"]) .theme-toggle :global(.theme-icon-auto),
+  :global([data-theme-mode="light"]) .theme-toggle :global(.theme-icon-light),
+  :global([data-theme-mode="dark"]) .theme-toggle :global(.theme-icon-dark) {
+    display: block;
+  }
+</style>

@@ -5,5 +5,5 @@ export const truncateSummary = (text: string, maxWords = 24) => {
     return text.trim();
   }
 
-  return `${words.slice(0, maxWords).join(" ")}...`;
+  return `${words.slice(0, maxWords).join(" ").replace(/[\s,;.…–—-]+$/, "")}…`;
 };

@@ -1,0 +1,83 @@
+---
+import PostCard from "./PostCard.astro";
+import { t, type Locale } from "../lib/i18n";
+import type { Post } from "../lib/posts";
+
+interface Props {
+  posts: Post[];
+  locale: Locale;
+}
+
+const { posts, locale } = Astro.props;
+const s = t(locale);
+const [featured, ...rest] = posts;
+---
+
+<div class="container">
+  <header class="page-header">
+    <h1>{s.tagline}</h1>
+    <p>{s.intro}</p>
+  </header>
+
+  <section aria-labelledby="posts-heading">
+    <h2 id="posts-heading" class="visually-hidden">{s.postsHeading}</h2>
+    <ol class="post-list" role="list">
+      {featured && (
+        <li class="post-list-featured">
+          <PostCard post={featured} featured />
+        </li>
+      )}
+      {rest.map((post) => (
+        <li>
+          <PostCard post={post} />
+        </li>
+      ))}
+    </ol>
+  </section>
+</div>
+
+<style lang="scss">
+  @use "../styles/mq" as *;
+
+  .page-header {
+    max-width: 48rem;
+    margin-bottom: var(--gt-space-8);
+
+    @include desktop {
+      margin-bottom: var(--gt-space-12);
+    }
+
+    h1 {
+      margin: 0 0 var(--gt-space-4);
+      font-size: var(--gt-h1);
+      letter-spacing: -0.03em;
+    }
+
+    p {
+      margin: 0;
+      color: var(--gt-muted);
+      font-size: var(--gt-text-lg);
+    }
+  }
+
+  .post-list {
+    display: grid;
+    gap: var(--gt-space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    @include above-mobile {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @include large {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--gt-space-8);
+    }
+  }
+
+  .post-list-featured {
+    grid-column: 1 / -1;
+  }
+</style>

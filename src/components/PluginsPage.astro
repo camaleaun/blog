@@ -1,0 +1,169 @@
+---
+import Icon from "./Icon.astro";
+import { pluginsPage } from "../data/plugins";
+import type { Locale } from "../lib/i18n";
+
+interface Props {
+  locale: Locale;
+}
+
+const page = pluginsPage[Astro.props.locale];
+const plugins = page.plugins.filter((plugin) => !plugin.hidden);
+---
+
+<div class="container plugins-page">
+  <header class="page-header">
+    <h1>{page.heading}</h1>
+    <p>{page.intro}</p>
+  </header>
+
+  <ul class="plugins" role="list">
+    {plugins.map((plugin, index) => (
+      <li>
+        <article class:list={["plugin", { "plugin--featured": index === 0 }]} aria-labelledby={`plugin-${index}`}>
+          <p class="plugin-status">{plugin.status}</p>
+          <h2 id={`plugin-${index}`}>{plugin.name}</h2>
+          <p class="plugin-text">{plugin.text}</p>
+          <ul class="plugin-facts" role="list">
+            {plugin.facts.map((fact) => <li>{fact}</li>)}
+          </ul>
+          <ul class="plugin-links" role="list">
+            {plugin.links.map((link) => (
+              <li>
+                <a href={link.href}>
+                  {link.label}
+                  <Icon name="arrowRight" size={16} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        </article>
+      </li>
+    ))}
+  </ul>
+</div>
+
+<style lang="scss">
+  @use "../styles/mq" as *;
+
+  .page-header {
+    max-width: 48rem;
+    margin-bottom: var(--gt-space-8);
+
+    @include desktop {
+      margin-bottom: var(--gt-space-12);
+    }
+
+    h1 {
+      margin: 0 0 var(--gt-space-4);
+      font-size: var(--gt-h1);
+      letter-spacing: -0.03em;
+    }
+
+    p {
+      margin: 0;
+      color: var(--gt-muted);
+      font-size: var(--gt-text-lg);
+    }
+  }
+
+  .plugins {
+    display: grid;
+    gap: var(--gt-space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    @include above-mobile {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    > li:first-child {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .plugin {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gt-space-3);
+    height: 100%;
+    padding: var(--gt-space-6);
+    border: 1px solid var(--gt-border);
+    border-radius: var(--gt-radius-lg);
+    background: var(--gt-surface);
+
+    @include desktop {
+      padding: var(--gt-space-8);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: var(--gt-h3);
+    }
+  }
+
+  .plugin--featured {
+    background:
+      radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--gt-accent) 18%, transparent), transparent 45%),
+      var(--gt-primary-soft);
+    border-color: color-mix(in srgb, var(--gt-primary) 30%, var(--gt-border));
+
+    h2 {
+      font-size: var(--gt-h2);
+    }
+
+    .plugin-text {
+      max-width: 48rem;
+      font-size: var(--gt-text-lg);
+    }
+  }
+
+  .plugin-status {
+    margin: 0;
+    color: var(--gt-primary);
+    font-size: var(--gt-text-sm);
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .plugin-text {
+    margin: 0;
+  }
+
+  .plugin-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gt-space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--gt-text-sm);
+
+    li {
+      padding: var(--gt-space-1) var(--gt-space-3);
+      border: 1px solid var(--gt-border);
+      border-radius: var(--gt-radius-full);
+      background: var(--gt-paper);
+      color: var(--gt-muted);
+    }
+  }
+
+  .plugin-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gt-space-1) var(--gt-space-4);
+    margin: auto 0 0;
+    padding: var(--gt-space-2) 0 0;
+    list-style: none;
+
+    a {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--gt-space-2);
+      min-height: var(--gt-target);
+      font-weight: 600;
+    }
+  }
+</style>

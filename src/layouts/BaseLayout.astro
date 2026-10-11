@@ -1,190 +1,284 @@
 ---
-import "../styles/site.css";
+import "../styles/global.scss";
+import type { ImageMetadata } from "astro";
+import { getImage } from "astro:assets";
+import Brand from "../components/Brand.astro";
+import LanguageSwitch from "../components/LanguageSwitch.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
+import Icon from "../components/Icon.astro";
+import { Picture } from "astro:assets";
+import wapuu from "../assets/wapuu.webp";
+import { baseUrl, githubUrl, siteName, t, type Locale } from "../lib/i18n";
+import ogEn from "../assets/og-en.png";
+import ogPt from "../assets/og-pt-br.png";
 
 interface Props {
   title: string;
-  description?: string;
-  locale?: "en" | "pt-BR";
+  description: string;
+  locale: Locale;
   enUrl?: string;
   ptUrl?: string;
+  /** The other language's URL only when this exact page is translated. */
+  alternates?: { en?: string; pt?: string };
+  image?: ImageMetadata;
+  type?: "website" | "article" | "profile";
+  publishedTime?: Date;
+  jsonLd?: Record<string, unknown>;
 }
-
-const baseUrl = import.meta.env.BASE_URL.endsWith("/")
-  ? import.meta.env.BASE_URL
-  : `${import.meta.env.BASE_URL}/`;
 
 const {
   title,
-  description = "Blog",
-  locale = "en",
+  description,
+  locale,
   enUrl = baseUrl,
-  ptUrl = `${baseUrl}pt-br/`
+  ptUrl = `${baseUrl}pt-br/`,
+  alternates,
+  image,
+  type = "website",
+  publishedTime,
+  jsonLd
 } = Astro.props;
 
-const htmlLang = locale === "pt-BR" ? "pt-BR" : "en";
-const languageLabel = locale === "pt-BR" ? "Portugues (BR)" : "English";
+const s = t(locale);
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const absolute = (path: string) => new URL(path, Astro.site).href;
+
+// Social images must be PNG/JPG; a post's thumbnail is resized to 1200 wide.
+const social = image
+  ? await getImage({ src: image, width: 1200, format: "jpg" })
+  : await getImage({ src: locale === "pt-BR" ? ogPt : ogEn, format: "png" });
+const socialUrl = absolute(social.src);
+const socialWidth = social.attributes.width ?? 1200;
+const socialHeight = social.attributes.height ?? (image ? 1200 : 630);
+const year = new Date().getFullYear();
+const current = (url: string) => (Astro.url.pathname === url ? "page" : undefined);
 ---
 
 <!doctype html>
-<html lang={htmlLang}>
+<html lang={locale}>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <meta name="description" content={description} />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.href} />
+    {alternates?.en && <link rel="alternate" hreflang="en" href={absolute(alternates.en)} />}
+    {alternates?.pt && <link rel="alternate" hreflang="pt-BR" href={absolute(alternates.pt)} />}
+    {alternates?.en && <link rel="alternate" hreflang="x-default" href={absolute(alternates.en)} />}
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121418" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href={`${baseUrl}favicon.svg`} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={`${baseUrl}apple-touch-icon.png`} />
+    <link rel="sitemap" href={`${baseUrl}sitemap-index.xml`} />
+    <meta name="author" content={siteName} />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:locale" content={s.ogLocale} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:image" content={socialUrl} />
+    <meta property="og:image:width" content={String(socialWidth)} />
+    <meta property="og:image:height" content={String(socialHeight)} />
+    {publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+
     <script is:inline>
       (() => {
-        const stored = localStorage.getItem("theme-mode") || "auto";
-        const resolved =
-          stored === "auto"
-            ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
-            : stored;
-        document.documentElement.setAttribute("data-theme", resolved);
-        document.documentElement.setAttribute("data-theme-mode", stored);
+        const root = document.documentElement;
+        root.classList.add("js");
+        let mode = "auto";
+        try {
+          mode = localStorage.getItem("theme-mode") || "auto";
+        } catch {}
+        if (mode === "light" || mode === "dark") root.dataset.theme = mode;
+        root.dataset.themeMode = mode;
       })();
     </script>
   </head>
   <body>
-    <main class="shell">
-      <div class="topbar">
-        <a class="home-link" href={locale === "pt-BR" ? `${baseUrl}pt-br/` : baseUrl}>Blog</a>
-        <div class="topbar-tools">
-          <div id="language-dropdown" class="nav-dropdown nav-dropdown--language" role="navigation" aria-label="Language switcher">
-            <button id="language-trigger" class="nav-dropdown-trigger" type="button" aria-haspopup="true" aria-expanded="false">
-              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="icon-language">
-                <path fill="currentColor" d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"></path>
-              </svg>
-              <span>{languageLabel}</span>
-            </button>
-            <ul class="nav-dropdown-menu" role="menu">
-              <li><a href={enUrl} class={locale === "en" ? "active" : ""} lang="en">English</a></li>
-              <li><a href={ptUrl} class={locale === "pt-BR" ? "active" : ""} lang="pt-BR">Portugues (BR)</a></li>
-            </ul>
-          </div>
+    <a class="skip-link" href="#main">{s.skip}</a>
 
-          <div id="theme-dropdown" class="nav-dropdown nav-dropdown--theme" role="navigation" aria-label="Theme switcher">
-            <button id="theme-trigger" class="nav-dropdown-trigger" type="button" aria-haspopup="true" aria-expanded="false">
-              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="icon-theme icon-theme-light">
-                <path fill="currentColor" d="M12 18a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0v-2a1 1 0 0 1 1-1zm0-16a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1zm9 9a1 1 0 1 1 0 2h-2a1 1 0 1 1 0-2h2zM5 12a1 1 0 1 1 0 2H3a1 1 0 1 1 0-2h2zm11.66 6.66a1 1 0 0 1 1.41 0l1.42 1.42a1 1 0 0 1-1.41 1.41l-1.42-1.41a1 1 0 0 1 0-1.42zM4.51 4.51a1 1 0 0 1 1.41 0l1.42 1.42a1 1 0 1 1-1.41 1.41L4.51 5.93a1 1 0 0 1 0-1.42zm13.58 2.83a1 1 0 0 1 0-1.41l1.41-1.42a1 1 0 1 1 1.42 1.41l-1.42 1.42a1 1 0 0 1-1.41 0zM5.93 16.66a1 1 0 0 1 1.41 1.41l-1.42 1.42a1 1 0 0 1-1.41-1.41l1.42-1.42zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10z"></path>
-              </svg>
-              <span id="theme-label">Theme</span>
-            </button>
-            <ul class="nav-dropdown-menu" role="menu">
-              <li><button class="dropdown-option" type="button" data-theme-value="light">Light</button></li>
-              <li><button class="dropdown-option" type="button" data-theme-value="dark">Dark</button></li>
-              <li><button class="dropdown-option" type="button" data-theme-value="auto">Auto</button></li>
-            </ul>
-          </div>
-        </div>
+    <header class="site-header">
+      <div class="container site-header-inner">
+        <Brand locale={locale} />
+        <nav class="site-tools" aria-label={s.menu}>
+          <a class="nav-link" href={s.pluginsUrl} aria-current={current(s.pluginsUrl)}>{s.plugins}</a>
+          <a class="nav-link" href={s.aboutUrl} aria-current={current(s.aboutUrl)}>{s.about}</a>
+          <LanguageSwitch locale={locale} enUrl={enUrl} ptUrl={ptUrl} />
+        </nav>
+        <ThemeToggle locale={locale} />
       </div>
+    </header>
+
+    <main id="main" tabindex="-1">
       <slot />
     </main>
-    <script is:inline>
-      (() => {
-        const applyTheme = (mode) => {
-          const resolved =
-            mode === "auto"
-              ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
-              : mode;
 
-          document.documentElement.setAttribute("data-theme", resolved);
-          document.documentElement.setAttribute("data-theme-mode", mode);
-          localStorage.setItem("theme-mode", mode);
-
-          const label = document.getElementById("theme-label");
-          if (label) {
-            label.textContent = mode === "auto" ? "Auto" : mode[0].toUpperCase() + mode.slice(1);
-          }
-
-          document.querySelectorAll(".dropdown-option[data-theme-value]").forEach((btn) => {
-            const isActive = btn.getAttribute("data-theme-value") === mode;
-            btn.classList.toggle("active", isActive);
-            btn.setAttribute("aria-pressed", isActive ? "true" : "false");
-          });
-        };
-
-        const current = document.documentElement.getAttribute("data-theme-mode") || "auto";
-        applyTheme(current);
-
-        const languageDropdown = document.getElementById("language-dropdown");
-        const languageTrigger = document.getElementById("language-trigger");
-        const themeDropdown = document.getElementById("theme-dropdown");
-        const themeTrigger = document.getElementById("theme-trigger");
-
-        const setLanguageDropdownOpen = (isOpen) => {
-          if (!languageDropdown || !languageTrigger) {
-            return;
-          }
-
-          languageDropdown.classList.toggle("is-open", isOpen);
-          languageTrigger.setAttribute("aria-expanded", isOpen ? "true" : "false");
-        };
-
-        const setThemeDropdownOpen = (isOpen) => {
-          if (!themeDropdown || !themeTrigger) {
-            return;
-          }
-
-          themeDropdown.classList.toggle("is-open", isOpen);
-          themeTrigger.setAttribute("aria-expanded", isOpen ? "true" : "false");
-        };
-
-        languageTrigger?.addEventListener("click", (event) => {
-          event.stopPropagation();
-          const willOpen = !languageDropdown?.classList.contains("is-open");
-          setLanguageDropdownOpen(Boolean(willOpen));
-          setThemeDropdownOpen(false);
-        });
-
-        languageDropdown?.querySelectorAll("a").forEach((link) => {
-          link.addEventListener("click", () => {
-            setLanguageDropdownOpen(false);
-          });
-        });
-
-        themeTrigger?.addEventListener("click", (event) => {
-          event.stopPropagation();
-          const willOpen = !themeDropdown?.classList.contains("is-open");
-          setThemeDropdownOpen(Boolean(willOpen));
-          setLanguageDropdownOpen(false);
-        });
-
-        document.querySelectorAll(".dropdown-option[data-theme-value]").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            const mode = btn.getAttribute("data-theme-value");
-            if (mode) {
-              applyTheme(mode);
-            }
-
-            setThemeDropdownOpen(false);
-          });
-        });
-
-        document.addEventListener("click", (event) => {
-          if (!languageDropdown || !languageDropdown.contains(event.target)) {
-            setLanguageDropdownOpen(false);
-          }
-
-          if (!themeDropdown || !themeDropdown.contains(event.target)) {
-            setThemeDropdownOpen(false);
-          }
-        });
-
-        document.addEventListener("keydown", (event) => {
-          if (event.key === "Escape") {
-            setLanguageDropdownOpen(false);
-            setThemeDropdownOpen(false);
-          }
-        });
-
-        const media = window.matchMedia("(prefers-color-scheme: dark)");
-        media.addEventListener("change", () => {
-          const mode = document.documentElement.getAttribute("data-theme-mode") || "auto";
-          if (mode === "auto") {
-            applyTheme("auto");
-          }
-        });
-      })();
-    </script>
+    <footer class="site-footer">
+      <div class="container site-footer-inner">
+        <a class="site-footer-about" href={s.aboutUrl}>
+          <Picture src={wapuu} formats={["avif", "webp"]} widths={[48, 96]} sizes="3rem" alt="" loading="lazy" />
+          {s.aboutAuthor}
+        </a>
+        <p>
+          © {year} {siteName} · camaleaun
+        </p>
+        <p class="site-footer-note">{s.footer}</p>
+        <a class="site-footer-link" href={githubUrl} rel="me">
+          <Icon name="github" size={18} />
+          {s.github}
+        </a>
+      </div>
+    </footer>
   </body>
 </html>
+
+<style lang="scss">
+  @use "../styles/mq" as *;
+
+  .site-header {
+    border-bottom: 1px solid var(--gt-border);
+    background: var(--gt-paper);
+  }
+
+  .site-header-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--gt-space-2) var(--gt-space-4);
+    padding-block: var(--gt-space-3);
+  }
+
+  .site-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--gt-space-1);
+    margin-left: auto;
+  }
+
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--gt-target);
+    padding-inline: var(--gt-space-3);
+    border-radius: var(--gt-radius-full);
+    color: var(--gt-ink);
+    font-size: var(--gt-text-sm);
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color var(--gt-duration) var(--gt-ease);
+  }
+
+  .nav-link:hover {
+    background: var(--gt-surface);
+    color: var(--gt-ink);
+  }
+
+  .nav-link[aria-current="page"] {
+    background: var(--gt-primary-soft);
+    font-weight: 650;
+  }
+
+  // A thin rule between the page link and the language links.
+  .site-tools :global(.languages) {
+    margin-left: var(--gt-space-2);
+    padding-left: var(--gt-space-3);
+    border-left: 1px solid var(--gt-border);
+  }
+
+  @include mobile {
+    .site-header-inner {
+      justify-content: space-between;
+    }
+
+    .site-tools {
+      margin-left: 0;
+      order: 3;
+      width: 100%;
+      margin-inline: calc(-1 * var(--gt-space-2));
+    }
+
+    .nav-link,
+    .site-tools :global(.languages a) {
+      padding-inline: var(--gt-space-2);
+    }
+
+    .site-tools :global(.languages) {
+      margin-left: 0;
+      padding-left: 0;
+      border-left: 0;
+    }
+  }
+
+  main {
+    outline: none;
+  }
+
+  .site-footer {
+    border-top: 1px solid var(--gt-border);
+    background: var(--gt-surface);
+    color: var(--gt-muted);
+    font-size: var(--gt-text-sm);
+  }
+
+  .site-footer-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--gt-space-2) var(--gt-space-6);
+    padding-block: var(--gt-space-6);
+
+    p {
+      margin: 0;
+    }
+  }
+
+  .site-footer-note {
+    flex: 1;
+  }
+
+  .site-footer-about {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gt-space-3);
+    min-height: var(--gt-target);
+    color: var(--gt-ink);
+    font-weight: 600;
+    text-decoration: none;
+
+    :global(img) {
+      width: 3rem;
+      height: auto;
+      transition: transform var(--gt-duration) var(--gt-ease);
+    }
+  }
+
+  .site-footer-about:hover {
+    color: var(--gt-primary);
+    text-decoration: underline;
+
+    :global(img) {
+      transform: rotate(-8deg) scale(1.08);
+    }
+  }
+
+  .site-footer-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gt-space-2);
+    min-height: var(--gt-target);
+    color: var(--gt-ink);
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .site-footer-link:hover {
+    color: var(--gt-primary);
+    text-decoration: underline;
+  }
+</style>

@@ -1,0 +1,33 @@
+// WordPress viewport style states (Gutenberg WP_Theme_JSON::DEFAULT_VIEWPORT_BREAKPOINTS,
+// mobile 480px, tablet 782px) in rem, with the same range queries.
+// Mixins only: `@use "../styles/mq" as *;` emits nothing by itself.
+$mobile: 30rem;
+$tablet: 48.875rem;
+// Content widths inside @desktop, from @wordpress/base-styles (break-large, break-wide).
+$large: 60rem;
+$wide: 80rem;
+
+@mixin mobile {
+  @media (width <= $mobile) { @content; }
+}
+
+@mixin tablet {
+  @media ($mobile < width <= $tablet) { @content; }
+}
+
+@mixin desktop {
+  @media (width > $tablet) { @content; }
+}
+
+// Tablet and up (anything wider than @mobile).
+@mixin above-mobile {
+  @media (width > $mobile) { @content; }
+}
+
+@mixin large {
+  @media (width >= $large) { @content; }
+}
+
+@mixin wide {
+  @media (width >= $wide) { @content; }
+}

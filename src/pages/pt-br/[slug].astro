@@ -1,37 +1,30 @@
 ---
-import { getCollection, render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { formatDate } from "../../lib/formatDate";
-import { getPostThumbnail } from "../../lib/getPostThumbnail";
+import PostArticle from "../../components/PostArticle.astro";
+import { baseUrl, siteName } from "../../lib/i18n";
+import { getPosts, type Post } from "../../lib/posts";
+import { postJsonLd } from "../../lib/postJsonLd";
 
 export async function getStaticPaths() {
-  const posts = await getCollection("postsPt");
-
-  return posts.map((post) => ({
-    params: { slug: post.data.slug },
-    props: { post }
-  }));
+  const posts = await getPosts("pt-BR");
+  return posts.map((post) => ({ params: { slug: post.entry.data.slug }, props: { post } }));
 }
 
-const { post } = Astro.props;
-const { Content } = await render(post);
-const thumbnail = getPostThumbnail(post.data.slug, "pt-BR", post.data.origin);
-const baseUrl = import.meta.env.BASE_URL.endsWith("/")
-  ? import.meta.env.BASE_URL
-  : `${import.meta.env.BASE_URL}/`;
-const enUrl = `${baseUrl}${post.data.origin}/`;
+const { post } = Astro.props as { post: Post };
+const enUrl = post.translationHref ?? baseUrl;
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description} locale="pt-BR" enUrl={enUrl} ptUrl={`${baseUrl}pt-br/${post.data.slug}/`}>
-  <article class="post-single">
-    <h1>{post.data.title}</h1>
-    <p class="post-meta">{formatDate(post.data.pubDate, "pt-BR")}</p>
-    {thumbnail && (
-      <img src={thumbnail.src}
-        alt={`Miniatura de ${post.data.title}`}
-        class="post-thumbnail" />
-    )}
-    {!thumbnail && <div class="thumb-placeholder" aria-hidden="true"></div>}
-    <Content />
-  </article>
+<BaseLayout
+  title={`${post.title} — ${siteName}`}
+  description={post.description}
+  locale="pt-BR"
+  enUrl={enUrl}
+  ptUrl={post.href}
+  alternates={{ en: post.translationHref, pt: post.href }}
+  image={post.thumbnail ?? undefined}
+  type="article"
+  publishedTime={post.date}
+  jsonLd={postJsonLd(post, new URL(post.href, Astro.site))}
+>
+  <PostArticle post={post} />
 </BaseLayout>
